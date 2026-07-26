@@ -1,0 +1,54 @@
+services:
+  evolution-api:
+    container_name: evolution_api
+    image: evoapicloud/evolution-api:latest
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTHENTICATION_API_KEY=Sua_Senha_Aqui
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://evolution:evolution@postgres:5432/evolution
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://redis:6379/6
+
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - evolution_network
+
+  postgres:
+    container_name: evolution_postgres
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: evolution
+      POSTGRES_DB: evolution
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - evolution_network
+
+  redis:
+    container_name: evolution_redis
+    image: redis:6
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - evolution_redis:/data
+    networks:
+      - evolution_network
+
+volumes:
+  evolution_instances:
+  postgres_data:
+  evolution_redis:
+
+networks:
+  evolution_network:
+    driver: bridge
