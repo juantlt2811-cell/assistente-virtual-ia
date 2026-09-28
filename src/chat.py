@@ -47,7 +47,7 @@ def initialize_embeddings():
 
 llm = ChatGroq(model="openai/gpt-oss-20b", api_key=os.getenv("GROQ_API_KEY"))  
 
-template = "Você é um atendente virtual de uma loja de e-commerce. Responda às perguntas dos clientes com base nas informações disponíveis. contexto: {context} pergunta: {pergunta}"
+template = "Você é um atendente virtual de uma loja de e-commerce. Responda às perguntas dos clientes com base nas informações disponíveis. Não responda nada que esteja fora da base de dados. contexto: {context} pergunta: {pergunta}"
 prompt = ChatPromptTemplate.from_template(template)
 
 def get_chain():

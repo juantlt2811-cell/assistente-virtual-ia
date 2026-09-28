@@ -28,3 +28,8 @@ O código-fonte está estruturado no diretório `src/`:
 1. Clone o repositório e instale as dependências:
    ```bash
    pip install -r requirements.txt
+
+## 5. Pitch do Projeto
+Assista à apresentação do projeto onde explico o problema, a solução e a demonstração prática:
+
+[![Assista ao Pitch no YouTube](https://img.shields.io/badge/YouTube-Assistir%20ao%20Pitch-red?style=for-the-badge&logo=youtube)](https://youtu.be/eqFcvCk8XAI)
