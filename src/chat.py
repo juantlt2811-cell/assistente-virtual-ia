@@ -10,12 +10,21 @@ from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 from utils.evolution import EvolutionAPI
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+csv_path = os.path.join(current_dir, '..', 'data', 'Q&A_Ecommerce.csv')
 
-load_dotenv()
+current_dir = os.path.dirname(os.path.abspath(__file__))
+dotenv_path = os.path.join(current_dir, '..', '.env')
+load_dotenv(dotenv_path=dotenv_path)
 app = flask.Flask(__name__)
-client = ChatGroq(model="llama-3.1-8b-instant")  
+client = ChatGroq(model="openai/gpt-oss-20b")
 e = EvolutionAPI()
-loader = CSVLoader(file_path='Q&A_Ecommerce.csv')
+loader = CSVLoader(file_path=csv_path)
+api_key = os.getenv("GROQ_API_KEY")
+if not api_key:
+    print("❌ ATENÇÃO: GROQ_API_KEY não foi encontrada! Verifique o arquivo .env na raiz.")
+else:
+    print("✅ Chave da Groq carregada com sucesso!")
 
 # Lazy loading dos embeddings para evitar travamento do debugger
 embeddings = None
@@ -36,7 +45,7 @@ def initialize_embeddings():
         retrival = vector_store.as_retriever()
         print("Embeddings carregados com sucesso!")
 
-llm = ChatGroq(model="llama-3.1-8b-instant", api_key=os.getenv("GROQ_API_KEY"))  
+llm = ChatGroq(model="openai/gpt-oss-20b", api_key=os.getenv("GROQ_API_KEY"))  
 
 template = "Você é um atendente virtual de uma loja de e-commerce. Responda às perguntas dos clientes com base nas informações disponíveis. contexto: {context} pergunta: {pergunta}"
 prompt = ChatPromptTemplate.from_template(template)
@@ -50,7 +59,27 @@ def get_chain():
          | llm 
     ) 
 
-
+@app.route('/teste', methods=['POST'])
+def teste():
+    # Tenta pegar o JSON de forma segura
+    data = flask.request.get_json(silent=True)
+    
+    if not data or 'pergunta' not in data:
+        return flask.jsonify({
+            "erro": "Formato inválido. Envie um JSON no formato: {\"pergunta\": \"Sua dúvida aqui\"}"
+        }), 400
+        
+    pergunta = data.get('pergunta', '')
+    
+    try:
+        chain = get_chain()
+        message = chain.invoke(pergunta)
+        return flask.jsonify({
+            "pergunta": pergunta,
+            "resposta": message.content
+        })
+    except Exception as e:
+        return flask.jsonify({"erro": str(e)}), 500
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
